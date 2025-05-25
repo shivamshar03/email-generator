@@ -1,4 +1,4 @@
-from app import EMAIL_USER,EMAIL_PASS,st
+import streamlit as st
 import yagmail
 from langchain.prompts import PromptTemplate
 from langchain_groq import ChatGroq
@@ -12,9 +12,9 @@ dotenv.load_dotenv()
 llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.9)
 
 # Function to send email
-def send_email(to_email, email_content,attachments = None):
+def send_email(to_email, email_content,email_user, email_pass,attachments = None):
     try:
-        if not EMAIL_USER and not EMAIL_PASS:
+        if not email_user and not email_pass:
             st.error("🚫 Email credentials are missing")
             return
 
@@ -23,7 +23,7 @@ def send_email(to_email, email_content,attachments = None):
         if attachments:
             email_contents.extend(attachments)
 
-        yag = yagmail.SMTP(user=EMAIL_USER, password=EMAIL_PASS)
+        yag = yagmail.SMTP(user=email_user, password=email_pass)
         yag.send(to=to_email, subject=subject, contents=email_contents)
         st.success(f"✅ Mail sent successfully to {to_email}")
     except Exception as e:

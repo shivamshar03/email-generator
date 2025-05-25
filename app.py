@@ -1,12 +1,20 @@
 from backend import *
-import streamlit as st
 
-# Streamlit app
+# App Configurations and Header
 st.set_page_config(page_title="Generate Emails", page_icon='📧', layout='centered')
 st.header("Generate Emails 📧")
 
-EMAIL_USER = st.sidebar.text_input("Your Email ID(sender's) : ")
-EMAIL_PASS = st.sidebar.text_input("APP Password key :")
+
+# sidebar elements
+st.sidebar.info("🔒 Your email credentials are used securely during this session only and are not stored anywhere.")
+if "EMAIL_USER" not in st.session_state:
+    st.session_state.EMAIL_USER = ""
+if "EMAIL_PASS" not in st.session_state:
+    st.session_state.EMAIL_PASS = ""
+
+st.session_state.EMAIL_USER = st.sidebar.text_input("Your Email ID(sender's) :", value=st.session_state.EMAIL_USER)
+st.session_state.EMAIL_PASS = st.sidebar.text_input("APP Password key :", type="password", value=st.session_state.EMAIL_PASS)
+
 with st.sidebar.expander("How to generate APP Password key :"):
     st.markdown("""<!DOCTYPE html>
 <html lang="en">
@@ -34,7 +42,7 @@ with st.sidebar.expander("How to generate APP Password key :"):
       line-height: 1.8;
     }
     .note {
-      background-color: black;
+      background-color: #7a706e;
       padding: 10px;
       border-left: 4px solid white;
       margin-top: 20px;
@@ -106,11 +114,11 @@ if "generated_email" not in st.session_state:
 
 
 if st.button("🚀 Generate Email"):
-    if not form_input and not EMAIL_USER and not email_recipient:
+    if not form_input and not st.session_state["EMAIL_USER"] and not email_recipient:
         st.error("🚨 Please fill in all required fields.")
     else:
         with st.spinner("Generating email..."):
-            email_output = getLLMResponse(form_input, EMAIL_USER, email_recipient, email_style)
+            email_output = getLLMResponse(form_input,st.session_state["EMAIL_USER"], email_recipient, email_style)
             if email_output:
                 st.session_state.generated_email = email_output
 
@@ -118,10 +126,11 @@ if st.session_state.generated_email:
     mail_content = st.text_area("📨 Generated Email", value=st.session_state.generated_email, height=500)
 
     if st.button("📬 Send Mail"):
-        if togglebar:
-            send_email(email_recipient, mail_content,attachments=docs)
-        else:
-            send_email(email_recipient, mail_content)
+        with st.spinner("Sending email..."):
+            if togglebar:
+                send_email(email_recipient, mail_content,st.session_state["EMAIL_USER"],st.session_state["EMAIL_PASS"], attachments=docs)
+            else:
+                send_email(email_recipient, mail_content,st.session_state["EMAIL_USER"],st.session_state["EMAIL_PASS"])
 
 
 
